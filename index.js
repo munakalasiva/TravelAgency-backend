@@ -92,7 +92,8 @@ app.post("/api/remind", async (req, res) => {
     let mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Payment Reminder",
+      subject: "Payment Reminder from Travel Agency
+        ",
       text: `Hello ${name},\n\nYou have a pending payment of ₹${amountPending}. Please make the payment soon.\n\nThank you!`,
     };
 
