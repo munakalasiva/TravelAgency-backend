@@ -26,15 +26,49 @@ const transactionSchema = new mongoose.Schema({
   mode: String,
   amountTotal: Number,
   amountAdvance: Number,
+  refundAmount: { type: Number, default: 0 },
   amountPending: Number,
 });
 
 const Transaction = mongoose.model("Transaction", transactionSchema);
 
+// Utility function to calculate pending amount
+const calculatePending = (total = 0, advance = 0, refund = 0) => {
+  return total - advance - refund;
+};
+
 // ✅ Create Transaction
 app.post("/api/transactions", async (req, res) => {
   try {
-    const newTransaction = new Transaction(req.body);
+    const {
+      name,
+      phone,
+      email,
+      fromAddress,
+      toAddress,
+      bookingDate,
+      mode,
+      amountTotal = 0,
+      amountAdvance = 0,
+      refundAmount = 0
+    } = req.body;
+
+    const amountPending = calculatePending(amountTotal, amountAdvance, refundAmount);
+
+    const newTransaction = new Transaction({
+      name,
+      phone,
+      email,
+      fromAddress,
+      toAddress,
+      bookingDate,
+      mode,
+      amountTotal,
+      amountAdvance,
+      refundAmount,
+      amountPending
+    });
+
     await newTransaction.save();
     res.status(201).json(newTransaction);
   } catch (error) {
@@ -55,7 +89,27 @@ app.get("/api/transactions", async (req, res) => {
 // ✅ Update Transaction
 app.put("/api/transactions/:id", async (req, res) => {
   try {
-    const updatedTransaction = await Transaction.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const {
+      amountTotal = 0,
+      amountAdvance = 0,
+      refundAmount = 0,
+      ...rest
+    } = req.body;
+
+    const amountPending = calculatePending(amountTotal, amountAdvance, refundAmount);
+
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
+      req.params.id,
+      {
+        ...rest,
+        amountTotal,
+        amountAdvance,
+        refundAmount,
+        amountPending
+      },
+      { new: true }
+    );
+
     res.status(200).json(updatedTransaction);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -92,8 +146,13 @@ app.post("/api/remind", async (req, res) => {
     let mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
+<<<<<<< HEAD
       subject: "Payment Reminder from Travel Agency",
       text: `Hello ${name},\n\nYou have a pending payment of ₹${amountPending}. Please make the payment soon.\n\nThank you!`,
+=======
+      subject: "Payment Reminder",
+      text: `Hello ${name},\n\nYou have a pending payment of ₹${amountPending}. Please make the payment soon.\n\nThank you! from Travel Agency.`,
+>>>>>>> dded880 (Updated project components)
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
