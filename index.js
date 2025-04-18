@@ -32,9 +32,11 @@ const transactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.model("Transaction", transactionSchema);
 
-// Utility function to calculate pending amount
+// ✅ Utility Function
 const calculatePending = (total = 0, advance = 0, refund = 0) => {
-  return total - advance - refund;
+  return refund > 0
+    ? advance - refund
+    : total - advance;
 };
 
 // ✅ Create Transaction
@@ -146,13 +148,8 @@ app.post("/api/remind", async (req, res) => {
     let mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-<<<<<<< HEAD
       subject: "Payment Reminder from Travel Agency",
       text: `Hello ${name},\n\nYou have a pending payment of ₹${amountPending}. Please make the payment soon.\n\nThank you!`,
-=======
-      subject: "Payment Reminder",
-      text: `Hello ${name},\n\nYou have a pending payment of ₹${amountPending}. Please make the payment soon.\n\nThank you! from Travel Agency.`,
->>>>>>> dded880 (Updated project components)
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -165,6 +162,6 @@ app.post("/api/remind", async (req, res) => {
   }
 });
 
-// Start Server
+// ✅ Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
